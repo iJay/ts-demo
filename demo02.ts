@@ -77,11 +77,11 @@ type objOne = {
 }
 
 type objTwo = {
-  readonly name: string,
-  age?: number,
+  readonly name: string,  // 只读属性
+  age?: number, // 可选属性
   gender: boolean
 }
-// 1.1对索引类型的修改和构造新类型涉及到了映射类型的语法
+// 1.1 对索引类型的修改和构造新类型涉及到了映射类型的语法
 type Mapping1<obj extends object> = {
   [Key in keyof obj]: obj[Key]
 }
@@ -94,4 +94,63 @@ type Mapping2<obj extends object> = {
 type res1 = Mapping1<{a: 1, b: 2}>
 type res2 = Mapping2<{a: 1, b: 2}>
 
-// 1.2 可以对Key修改，通过extends来实现
+// 1.2 可以对Key修改，也可以对 Key 做修改，比如：索引类型的 Key 变为大写
+type UpperCaseKey<Obj extends object> = {
+  [Key in keyof Obj as Uppercase<Key & string>]: Obj[Key]
+}
+// 类型参数 Obj 是待处理的索引类型，通过 extends 约束为 object
+// 新的索引类型的索引为 Obj 中的索引，也就是 Key in keyof Obj，但要做一些变换，也就是 as 之后的
+// 通过 Uppercase 把索引 Key 转为大写，因为索引可能为 string、number、symbol 类型，
+// 而这里只能接受 string 类型，所以要 & string，也就是取索引中 string 的部分。
+type UpperCaseKeyResult = UpperCaseKey<{ guang: 1, dong: 2}>
+
+// 1.3 Record
+// TypeScript 提供了内置的高级类型 Record 来创建索引类型。
+// Record<K, T> 的作用是构造一个类型，这个类型的属性名是 K 中的属性，属性值是 T 类型。
+type RecordMock<K extends string | number | symbol, T> = { [P in K] : T }
+// 上面的索引类型的约束我们用的 object 更语义化一点推荐用Record<string, any>
+
+type UpperCaseKey2<Obj extends Record<string, any>> = {
+  [Key in keyof Obj as Uppercase<Key & string>]: Obj[Key]
+}
+
+// 1.4 ToReadonly
+type ToReadonly<T> = {
+  readonly [Key in keyof T]: T[Key]
+}
+
+type ReadonlyResult = ToReadonly<{ name: 'leohan', age: 33}>
+
+// 1.5 ToPartial
+type ToPartial<T> = {
+  [Key in keyof T]?: T[Key]
+}
+
+type PartialResult = ToPartial<{ name: 'leohan', age: 33}>
+
+// 1.6 ToMutable去掉readonly 修饰
+type ToMutable<T> = {
+  -readonly [Key in keyof T]: T[Key]
+}
+
+type MutableResult = ToMutable<{ readonly name: 'leohan', age: 33}>
+
+// 1.7 可选修饰符
+type ToRequired<T> = {
+  [Key in keyof T]-?: T[Key]
+}
+
+type RequiredResult = ToRequired<{name: 'leohan', age?: 33}>
+
+// 1.8 构造新索引类型的时候根据值的类型做下过滤
+type FilterByValueType<obj extends Record<string, any>, ValueType> = {
+  [Key in keyof obj as obj[Key] extends ValueType ? Key : never]: obj[Key]
+}
+
+interface Person {
+  name: string,
+  age: number;
+  hobby: string[]
+}
+// 对索引做修改的 as 叫做重映射
+type FilterResult = FilterByValueType<Person, string | number>
