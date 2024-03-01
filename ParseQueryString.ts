@@ -6,7 +6,7 @@ type ParseQueryString<Str extends string> =
 type ParseParam<Params extends string> =
   Params extends `${infer Key}=${infer Value}`
   ? { [k in Key]: Value }
-  : {}
+  :  Record<string, any>
 // 测试一下ParseParam
 type TestParseParam = ParseParam<'a=1'>
 
