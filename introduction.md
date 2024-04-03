@@ -136,3 +136,64 @@ func('#aaa');
 
 
 ## 类型的装饰
+除了描述类型的结构外，TypeScript 的类型系统还支持描述类型的属性，比如是否可选，是否只读等
+```typescript
+interface IPerson {
+  readonly name: string;
+  age？: number;
+}
+type tuple = [string, number?];
+```
+
+## TypeScript 类型系统中的类型运算
+TypeScript 里的条件判断是 extends ? :，叫做条件类型（Conditional Type）,可以理解为TypeScript 类型系统里的 if else。
+```typescript
+type res = 1 extends 2 ? true : false; // false
+type isTwo<T> = T extends 2 ? true : false;
+type res1 = isTwo<1>; // false
+type res2 = isTwo<2>; // true
+```
+isTwo这种也叫做高级类型，是传入类型参数，经过一系列类型运算逻辑后，返回新的类型。
+
+### infer推导
+用来提取类型的一部分
+```typescript
+type First<Tuple extends unknown[]> = Tuple extends [infer T, ...infer R] ? T : never;
+type res = First<[1, 2, 3]>; // 1
+```
+第一个extends不是条件，条件类型是extends ? :, 这里的extends是约束，约束类型参数只能是数组类型，这里的...是展开运算符，把数组展开成一个个元素，infer是推导，推导出数组的第一个元素，返回never是为了防止传入空数组。
+
+### 联合 |
+联合类型（Union）类似 js 里的或运算符 |，但是作用于类型，代表类型可以是几个类型之一。
+```typescript
+type union = 1 | 2 | 3;
+```
+
+### 交叉 &
+交叉类型（Intersection）类似 js 中的与运算符 &，但是作用于类型，代表对类型做合并。
+```typescript
+type objType = {a : number} & {c： number};
+type res3 = 'aaa' & 111; // never
+```
+对同一类型做交叉运算，相当于合并属性，不同的类型没法合并，会被舍弃。
+
+### 映射类型
+对象、class 在 TypeScript 对应的类型是索引类型（Index Type），通过映射类型来对索引类型进行操作。
+```typescript
+type MapType<T> = {
+  [Key in keyof T]: T[Key]
+}
+type res = MapType<{a: 1, b: 2}>; // {a: 1, b: 2}
+```
+keyof T 是查询索引类型中所有的索引，叫做索引查询。
+T[Key] 是取索引类型某个索引的值，叫做索引访问。
+in 是用于遍历联合类型的运算符。
+**映射类型就相当于把一个集合映射到另一个集合，这是它名字的由来。**
+除了值可以变化，所以也可以变化，用as运算符，叫做重映射。
+```typescript
+type MapType2<T> = {
+  [Key in keyof T as `${Key & string}${Key & string}${Key & string}`] : [T[Key], T[Key], T[Key]]
+}
+type res = MapType2<{a: 1, b: 2}>
+```
+因为索引类型（对象、class 等）可以用 string、number 和 symbol 作为 key，这里 keyof T 取出的索引就是 string | number | symbol 的联合类型，和 string 取交叉部分就只剩下 string 了。就像前面所说，交叉类型会把同一类型做合并，不同类型舍弃。所以这里的Key & string就是取出 string 类型的索引。
