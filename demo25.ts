@@ -3,6 +3,7 @@
 
 
 function zip<Target extends unknown[], Source extends unknown[]>(target: Target, source: Source): Zip2<Target, Source>
+// 这里只是用来接收其他类型， 所以 unknown 比any 更合适一些，更安全。
 function zip(target: unknown[], source: unknown[]): unknown[]
 
 
@@ -27,17 +28,4 @@ const arr1 = [1, 2, 3];
 const arr2 = [4, '5', 6];
 
 const result2 = zip(arr1, arr2);
-// 这里只是用来接收其他类型， 所以 unknown 比any 更合适一些，更安全。
-// interface Zip {
-//   (target: unknown[], source: unknown[]): unknown[];
-// }
 
-// const zip2: Zip = (target: unknown[], source: unknown[]): unknown[] => {
-//   if (target.length === 0 || source.length === 0) {
-//     return [];
-//   }
-
-//   const [targetFirst, ...targetRest] = target;
-//   const [sourceFirst, ...sourceRest] = source;
-//   return [[targetFirst, sourceFirst], ...zip(targetRest, sourceRest)];
-// }
