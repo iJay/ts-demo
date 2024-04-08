@@ -10,6 +10,7 @@ type union = 'a' | 'b' | 'c'
 
 // 把其中的a变为大写
 // 这里的Str是联合类型，所以会分别把联合类型的每一个元素传入到条件类型中做运算
+// 这样确实是简化了类型编程逻辑的，不需要递归提取每个元素再处理。
 type UpperCaseA<Str extends string> =
   Str extends 'a' ? `${Uppercase<Str>}` : Str
 
@@ -55,6 +56,7 @@ type testUnionResult2 = TestUnion2<'A' | 'B'> // => { a: "A"; b: "A";} | { a: "B
 type benResult = BEM<'guang', ['aaa', 'bbb'], ['warning', 'success']> // guang_aaa--warning" | "guang_aaa--success" | "guang_bbb--warning" | "guang_bbb--success
 // Bem的实现 如果传入的是数组，要递归遍历取出每一个元素来和其他部分组合，这样太麻烦了。
 // 使用联合类型的话，联合类型遇到字符串也是会单独每个元素单独传入做处理。
+
 // 这里我们把数组转为联合类型，然后再传入到条件类型中做处理。
 type union0901 = ['aaa', 'bbb'][number] // "aaa" | "bbb"
 
